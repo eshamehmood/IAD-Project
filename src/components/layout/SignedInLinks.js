@@ -6,7 +6,7 @@ import Menu from '@material-ui/core/Menu';
 import navButtons from '../../styles/navButtons';
 import CreatePost from '../posts/CreatePost';
 import { connect } from 'react-redux';
-import { logout } from '../../store/actions/authActions';
+import { logoutUser } from '../../store/actions/userActions'
 
 import IconButton from '@material-ui/core/IconButton';
 import MoreIcon from '@material-ui/icons/MoreVert';
@@ -37,14 +37,14 @@ const SignedInLinks = (props) => {
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
             >
-                <MenuItem component={NavLink} to="/">Home</MenuItem>
-                <MenuItem component={NavLink} to="/:user_id">My Account</MenuItem>
-                <MenuItem component={NavLink} to="/setting">Settings</MenuItem>
-                <MenuItem onClick={props.logout}>Logout</MenuItem>
+                <MenuItem onClick={handleMenuClose} component={NavLink} to="/">Home</MenuItem>
+                <MenuItem onClick={handleMenuClose} component={NavLink} to={`/users/${props.id}`}>My Account</MenuItem>
+                {/* <MenuItem onClick={handleMenuClose} component={NavLink} to="/setting">Settings</MenuItem> */}
+                <MenuItem onClick={props.logoutUser}>Logout</MenuItem>
             </Menu>
 
         </div>
-    if (props.profile.firstName) {
+    if (props.firstName) {
         return (
             <>
                 <div className={classes.desktopItem}>
@@ -52,16 +52,15 @@ const SignedInLinks = (props) => {
                         Home
                     </Button>
                     <CreatePost />
-                    <Button color="inherit" size="large" className={classes.button} component={NavLink} to="/:user_id">
-                        {/* Link to={'/' + user.id} */}
-                        {props.profile.firstName}
+                    <Button color="inherit" size="large" className={classes.button} component={NavLink} to={`/users/${props.id}`}>
+                        {props.firstName}
                     </Button>
-                    <Button color="inherit" size="large" className={classes.button} component={NavLink} to="/setting">
+                    {/* <Button color="inherit" size="large" className={classes.button} component={NavLink} to="/setting">
                         Settings
-                    </Button>
-                    <Button color="inherit" size="large" className={classes.button} onClick={props.logout}>
+                    </Button> */}
+                    <Button color="inherit" size="large" className={classes.button} onClick={props.logoutUser}>
                         Log Out
-                    </Button>
+                </Button>
                 </div>
                 {mobileView}
             </>
@@ -75,10 +74,8 @@ const SignedInLinks = (props) => {
     }
 }
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        logout: () => dispatch(logout())
-    }
+const mapDispatchToProps = {
+    logoutUser
 }
 
 export default connect(null, mapDispatchToProps)(SignedInLinks);

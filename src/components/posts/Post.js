@@ -1,23 +1,39 @@
-import React, { Component } from 'react';
-import { Card, CardContent, CardHeader, Typography, CardMedia, Avatar, IconButton, CardActions, Button } from '@material-ui/core';
+import React, { Component, Fragment } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { red } from '@material-ui/core/colors';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardHeader from '@material-ui/core/CardHeader';
+import Typography from '@material-ui/core/Typography';
+import CardMedia from '@material-ui/core/CardMedia';
+import Avatar from '@material-ui/core/Avatar';
+import IconButton from '@material-ui/core/IconButton';
+import CardActions from '@material-ui/core/CardActions';
+import Button from '@material-ui/core/Button';
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
-import Comment from './Comment';
+import Tooltip from '@material-ui/core/Tooltip';
 import CreateComment from './CreateComment';
 import LibraryAddCheckIcon from '@material-ui/icons/LibraryAddCheck';
 import CommentIcon from '@material-ui/icons/Comment';
 import LibraryAddIcon from '@material-ui/icons/LibraryAdd';
-import { NavLink } from 'react-router-dom';
+import DeleteIcon from '@material-ui/icons/Delete';
+import Grid from '@material-ui/core/Grid';
 import moment from 'moment';
+import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { likePost, unLikePost } from '../../store/actions/postActions';
+import { likePost, unlikePost, createComment, getComments } from '../../store/actions/dataActions';
+import { followUser, unfollowUser } from '../../store/actions/userActions';
+import DeletePostButton from './DeletePostButton'
+import Comment from './Comment';
+
+import Divider from '@material-ui/core/Divider';
 
 const useStyles = ((theme) => ({
     root: {
         maxWidth: 645,
-        minWidth: 345,
+        width: '80vw',
+        // minWidth: 345,
     },
     media: {
         // height: 0,
@@ -60,24 +76,39 @@ const useStyles = ((theme) => ({
     title: {
         backgroundColor: theme.palette.background.default,
     },
-    like: {
-        color: theme.palette.secondary.main,
-    },
     leftAlignCommentAction: {
         flexGrow: '1',
+    },
+    likeDisableButton: {
+        color: theme.palette.secondary.main,
+        "&$likeButtonDisabled": {
+            color: theme.palette.secondary.main,
+        }
+    },
+    likeButtonDisabled: {},
+    postImg: {
+        maxHeight: '600px',
+        maxWidth: '645px',
+        objectFit: 'contain',
     },
 }));
 
 
 class Post extends Component {
     state = {
-        liked: null,
+        // liked: this.props.post.liked,
+        // likeCount: this.props.post.likeCount,
         followed: false,
+        followingCount: 0,
+        likeDisable: false,
+    }
+    constructor(props) {
+        super(props);
+        this.state = { ...this.state, dimensions: {} };
     }
     componentDidMount = () => {
-        this.setState({ liked: this.props.post.liked });
+        this.props.getComments(this.props.post.postId);
     }
-
     likesSymbol = (like) => {
         if (like > 1000000000) {
             return (like / 1000000000).toFixed(1) + 'B';
@@ -90,121 +121,146 @@ class Post extends Component {
         }
         return like;
     }
-
-    handleLikeClick = (e) => {
-        e.preventDefault();
-        console.log(this.props)
-        // this.props.likeButtonAction(this.props.post);
-        this.setState({ liked: !this.state.liked });
-        let l = this.props.likeCount;
-        if (!this.state.liked) {
-            this.props.likePost(this.props.post);
-        }
-        if (this.state.liked) {
-            this.props.unLikePost(this.props.post);
-        }
+    handleLikeClick = () => {
+        this.setState({ likeDisable: true })
+        // this.setState({
+        //     liked: true,
+        //     likeCount: this.props.post.likeCount + 1
+        // })
+        this.props.likePost(this.props.post.postId, this.props.user.credentials.id);
+        setTimeout(() => this.setState({ likeDisable: false }), 500);
+    }
+    handleUnlikeClick = () => {
+        this.setState({ likeDisable: true })
+        // this.setState({
+        //     liked: false,
+        //     likeCount: this.props.post.likeCount - 1
+        // })
+        this.props.unlikePost(this.props.post.postId, this.props.user.credentials.id);
+        setTimeout(() => this.setState({ likeDisable: false }), 500);
     }
     handleFollowClick = (e) => {
         e.preventDefault();
-        this.setState({ followed: !this.state.followed });
+        this.props.followUser(this.props.post.authorId)
+    }
+    handleUnFollowClick = (e) => {
+        e.preventDefault();
+        this.props.unfollowUser(this.props.post.authorId)
     }
     render() {
-        const { post, classes } = this.props;
-        let liked = this.state.liked ? <FavoriteIcon /> : <FavoriteBorderIcon />;
-        let likes = this.likesSymbol(post.likeCount);
-        let followed = this.state.followed;
-        followed = this.state.followed ? (
+        const { post, post: { comments }, classes, user: { authenticated, credentials: { id, following } }, loading } = this.props;
 
+        let liked = id && post.likedBy && post.likedBy.includes(id) ?
+            <IconButton classes={{ root: classes.likeDisableButton, disabled: classes.likeButtonDisabled }}
+                disabled={this.state.likeDisable}
+                aria-label="Like"
+                onClick={this.handleUnlikeClick}>
+                <FavoriteIcon />
+            </IconButton> :
+            <IconButton classes={{ root: classes.likeDisableButton, disabled: classes.likeButtonDisabled }}
+                disabled={this.state.likeDisable}
+                aria-label="Like"
+                onClick={this.handleLikeClick}>
+                <FavoriteBorderIcon />
+            </IconButton>;
+        let likes = this.likesSymbol(post.likeCount);
+        const topButtonMarkup = authenticated && !loading && id === post.authorId ? (
+            <DeletePostButton postId={post.postId} />
+        ) : following && following.includes(post.authorId) ? (
             <Button classes={{ contained: classes.followButton }}
                 className={classes.followButtonText}
                 size="large"
                 variant="contained"
                 color="secondary"
-                onClick={this.handleFollowClick} >
+                onClick={this.handleUnFollowClick} >
                 Following <LibraryAddCheckIcon className={classes.iconMargin} />
             </Button>
         ) : (
+                    <Button className={classes.followButtonText}
+                        size="large" variant="outlined"
+                        color="secondary"
+                        onClick={this.handleFollowClick}>
+                        Follow <LibraryAddIcon className={classes.iconMargin} />
+                    </Button>
+                );
 
-                <Button className={classes.followButtonText}
-                    size="large" variant="outlined"
-                    color="secondary"
-                    onClick={this.handleFollowClick}>
-                    Follow <LibraryAddIcon className={classes.iconMargin} />
-                </Button>
-            );
         return (
             <div>
                 <Card className={classes.root}>
                     <CardHeader classes={{ action: classes.followButtonPosition }}
                         avatar={
-                            <Avatar component={NavLink} to={"/user/" + post.authorEmail} aria-label="recipe" className={classes.avatar}>
-                                {post.postId}
+                            <Avatar component={Link} to={`/users/${post.authorId}`}
+                                aria-label="avatar"
+                                src={post.authorImageUrl}
+                                className={classes.avatar}>
                             </Avatar>
                         }
                         action={
                             <span>
-                                {followed}
+                                {topButtonMarkup}
                             </span>
                         }
-                        title={<NavLink to={"/user/" + post.authorEmail} className={classes.link}>{post.authorName}</NavLink>}
-                        // subheader={
-                        //     post.createdAt
-                        //         ? moment(post.createdAt.toDate()).calendar()
-                        //         : ""}
+                        title={<Link to={`/users/${post.authorId}`} className={classes.link}>{post.authorUsername}</Link>}
+                        subheader={
+                            post.createdAt
+                                ? moment(post.createdAt).calendar()
+                                : ""
+                        }
                         className={classes.header}
                     />
-                    <CardContent>
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            {post.body}
-                        </Typography>
-                    </CardContent>
+                    {
+                        post.body !== '' && (
+                            <CardContent>
+                                <Typography variant="body2" color="textSecondary" component="p">
+                                    {post.body}
+                                </Typography>
+                            </CardContent>
+                        )
+                    }
                     <CardMedia
                         component={'img'}
-                        src={require('../../img/FB_UI.png')}
-                        title={post.imageName}
-                        style={{ height: "100%", width: "100%" }}
+                        src={post.imageUrl}
+                        title='image'
+                        // style={{ height: "100%", width: "100%" }}
+                        className={classes.postImg}
                     />
                     <CardActions disableSpacing>
-                        <IconButton aria-label="Like" className={classes.like} onClick={this.handleLikeClick}>
-                            {liked}
-                        </IconButton>
+                        {liked}
                         <Typography style={{ flexGrow: '1', textAlign: 'left' }} color="secondary" variant="subtitle1" >
                             {likes}
                         </Typography>
-                        <CommentIcon color="inherit" />
-                        <Typography style={{ margin: '0% 2%', }} color="inherit" variant="subtitle1" >
+                        <CommentIcon style={{ color: 'grey' }} />
+                        <Typography style={{ margin: '0% 2%' }} color="inherit" variant="subtitle1" >
                             {post.commentCount}
                         </Typography>
                     </CardActions>
-                    <Typography color="inherit" variant="subtitle2" >
+                    {/* <Typography color="inherit" variant="subtitle2" >
                         Comments
-            </Typography>
-                    {/* {post.comments && post.comments.map(comment => {
-                return (
-                    <Comment comment={comment} key={comment.id} />
-                )
-            })} */}
-                    <CreateComment />
+            </Typography> */}
+                    <Divider />
+                    {comments && comments.map(
+                        comment => <Fragment key={comment.commentId}>
+                            <Comment comment={comment} />
+                            <Divider />
+                        </Fragment>)
+                    }
+                    <CreateComment postId={post.postId} />
                 </Card>
             </div>
         );
     }
 }
 
-const mapStateToProps = (state, ownProps) => {
-    return {
+const mapStateToProps = (state) => ({
+    user: state.user,
+    loading: state.data.loading
+})
 
-    }
+const mapDispatchToProps = {
+    likePost, unlikePost, followUser, unfollowUser, createComment, getComments
 }
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        likePost: (post) => dispatch(likePost(post)),
-        unLikePost: (post) => dispatch(unLikePost(post)),
-    }
-}
-
-export default connect(null, mapDispatchToProps)(withStyles(useStyles)(Post));
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(useStyles)(Post));
 
 
 /*

@@ -1,4 +1,7 @@
-const { admin, db } = require('../util/admin');
+const {
+    admin,
+    db
+} = require('../util/admin');
 
 const config = require('../util/config');
 
@@ -11,6 +14,7 @@ exports.signup = (req, res) => {
     const newUser = {
         firstName: req.body.firstName,
         lastName: req.body.lastName,
+        name: [req.body.firstName, req.body.lastName],
         email: req.body.email,
         password: req.body.password,
         confirmPassword: req.body.confirmPassword
@@ -36,10 +40,13 @@ exports.signup = (req, res) => {
             db.collection('users').doc(userId).set({
                 firstName: newUser.firstName,
                 lastName: newUser.lastName,
+                name: newUser.name,
+                bio: 'No bio',
                 createdAt: new Date().toISOString(),
                 imageUrl: `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${noImg}?alt=media`,
                 followersCount: 0,
                 followingCount: 0,
+                following: [],
             })
                 .then(() => res.status(201).json({ token }))
         }).catch(err => {
@@ -149,11 +156,15 @@ exports.addUserDetails = (req, res) => {
 }
 
 exports.getAuthenticatedUser = (req, res) => {
-    let userData = {};
-    db.doc(`/users/${req.user.uid}`).get()
+    let userData = {
+        credentials: {},
+    };
+    db.collection('users').doc(req.user.uid)
+        .get()
         .then(doc => {
             if (doc.exists) {
                 userData.credentials = doc.data();
+                userData.credentials.id = doc.id;
                 return res.json(userData);
             }
         }).catch(err => {
@@ -168,126 +179,218 @@ exports.getUserDetails = (req, res) => {
         .get()
         .then((doc) => {
             if (doc.exists) {
-                userData.user = doc.data();
-                return db
-                    .collection("posts")
-                    .where("authorId", "==", req.params.userId)
-                    .orderBy("createdAt", "desc")
-                    .get();
+                userData = doc.data();
+                return res.json(userData);
             } else {
                 return res.status(404).json({ errror: "User not found" });
             }
         })
+        .catch((err) => {
+            console.error(err);
+            return res.status(500).json({ error: err.message });
+        });
+
+    // let userData = {};
+    // db.doc(`/users/${req.params.userId}`)
+    //     .get()
+    //     .then((doc) => {
+    //         if (doc.exists) {
+    //             userData.user = doc.data();
+    //             return db
+    //                 .collection("posts")
+    //                 .where("authorId", "==", req.params.userId)
+    //                 .orderBy("createdAt", "desc")
+    //                 .get();
+    //         } else {
+    //             return res.status(404).json({ errror: "User not found" });
+    //         }
+    //     })
+    //     .then((data) => {
+    //         userData.posts = [];
+    //         data.forEach((doc) => {
+    //             userData.posts.push({
+    //                 body: doc.data().body,
+    //                 imageUrl: doc.data().imageUrl,
+    //                 authorId: doc.data().authorId,
+    //                 authorImageUrl: doc.data().authorImageUrl,
+    //                 createdAt: doc.data().createdAt,
+    //                 likeCount: doc.data().likeCount,
+    //                 commentCount: doc.data().commentCount,
+    //                 postId: doc.id,
+    //             });
+    //         });
+    //         return res.json(userData);
+    //     })
+    //     .catch((err) => {
+    //         console.error(err);
+    //         return res.status(500).json({ error: err.code });
+    //     });
+}
+exports.searchUsers = (req, res) => {
+    db.collection('users')
+        .where('name', 'array-contains', req.params.searchName)
+        .get()
         .then((data) => {
-            userData.posts = [];
+            let users = [];
             data.forEach((doc) => {
-                userData.posts.push({
-                    body: doc.data().body,
+                users.push({
+                    userId: doc.id,
+                    bio: doc.data().bio,
+                    firstName: doc.data().firstName,
+                    lastName: doc.data().lastName,
                     imageUrl: doc.data().imageUrl,
-                    authorId: doc.data().authorId,
-                    authorImageUrl: doc.data().authorImageUrl,
-                    createdAt: doc.data().createdAt,
-                    likeCount: doc.data().likeCount,
-                    commentCount: doc.data().commentCount,
-                    postId: doc.id,
                 });
-            });
-            return res.json(userData);
+            })
+            return res.json(users);
         })
         .catch((err) => {
             console.error(err);
-            return res.status(500).json({ error: err.code });
+            res.status(500).json({ error: err.code });
         });
 }
 
 exports.followUser = (req, res) => {
     const userDocument = db.collection('users').doc(req.user.uid);
-    const followingDocument = userDocument.collection('following').doc(req.params.userId);
-
-    let userData;
-
+    const followUserDocument = db.collection('users').doc(req.params.userId)
     userDocument
         .get()
         .then((doc) => {
-            if (doc.exists) {
-                userData = doc.data();
-                userData.userId = doc.id;
-                return followingDocument.get()
-            } else {
-                return res.status(404).json({ error: 'User not found' });
+            if (doc.data().following.includes(req.params.userId)) {
+                return res.json({ error: 'Already following this user' });
             }
-        })
-        .then((followDoc) => {
-            if (!followDoc.exists) {
-                followingDocument
-                    .set({
-                        follow: true,
-                    })
+            else {
+                doc.ref.update({
+                    followingCount: admin.firestore.FieldValue.increment(1),
+                    following: admin.firestore.FieldValue.arrayUnion(req.params.userId)
+                })
                     .then(() => {
-                        userData.followingCount++;
-                        userDocument.update({ followingCount: userData.followingCount });
-                        db.collection('users').doc(req.params.userId).get()
-                            .then(doc => {
-                                const followersCount = doc.data().followersCount + 1;
-                                doc.ref.update({
-                                    followersCount
-                                })
-                            })
+                        followUserDocument.update({
+                            followersCount: admin.firestore.FieldValue.increment(1),
+                        })
+                        return res.json({ userId: req.params.userId });
                     })
-                    .then(() => {
-                        return res.json(userData);
-                    });
-            } else {
-                return res.status(400).json({ error: 'User already followed' });
             }
         })
         .catch((err) => {
             console.error(err);
             res.status(500).json({ error: err.code });
-        });
+        });;
+
+
+    // const userDocument = db.collection('users').doc(req.user.uid);
+    // const followingDocument = userDocument.collection('following').doc(req.params.userId);
+
+    // let userData;
+
+    // userDocument
+    //     .get()
+    //     .then((doc) => {
+    //         if (doc.exists) {
+    //             userData = doc.data();
+    //             userData.userId = doc.id;
+    //             return followingDocument.get()
+    //         } else {
+    //             return res.status(404).json({ error: 'User not found' });
+    //         }
+    //     })
+    //     .then((followDoc) => {
+    //         if (!followDoc.exists) {
+    //             followingDocument
+    //                 .set({
+    //                     follow: true,
+    //                 })
+    //                 .then(() => {
+    //                     userData.followingCount++;
+    //                     userDocument.update({ followingCount: userData.followingCount });
+    //                     db.collection('users').doc(req.params.userId).get()
+    //                         .then(doc => {
+    //                             const followersCount = doc.data().followersCount + 1;
+    //                             doc.ref.update({
+    //                                 followersCount
+    //                             })
+    //                         })
+    //                 })
+    //                 .then(() => {
+    //                     return res.json(userData);
+    //                 });
+    //         } else {
+    //             return res.status(400).json({ error: 'User already followed' });
+    //         }
+    //     })
+    //     .catch((err) => {
+    //         console.error(err);
+    //         res.status(500).json({ error: err.code });
+    //     });
 }
 
 exports.unfollowUser = (req, res) => {
+
     const userDocument = db.collection('users').doc(req.user.uid);
-    const followingDocument = userDocument.collection('following').doc(req.params.userId);
-
-    let userData;
-
+    const followUserDocument = db.collection('users').doc(req.params.userId)
     userDocument
         .get()
         .then((doc) => {
-            if (doc.exists) {
-                userData = doc.data();
-                userData.userId = doc.id;
-                return followingDocument.get()
-            } else {
-                return res.status(404).json({ error: 'User not found' });
+            if (!doc.data().following.includes(req.params.userId)) {
+                return res.json({ error: 'Not following this user' });
             }
-        })
-        .then((followDoc) => {
-            if (followDoc.exists) {
-                followingDocument
-                    .delete()
+            else {
+                doc.ref.update({
+                    followingCount: admin.firestore.FieldValue.increment(-1),
+                    following: admin.firestore.FieldValue.arrayRemove(req.params.userId)
+                })
                     .then(() => {
-                        userData.followingCount--;
-                        userDocument.update({ followingCount: userData.followingCount });
-                        db.collection('users').doc(req.params.userId).get()
-                            .then(doc => {
-                                const followersCount = doc.data().followersCount - 1;
-                                doc.ref.update({
-                                    followersCount
-                                })
-                            })
+                        followUserDocument.update({
+                            followersCount: admin.firestore.FieldValue.increment(-1),
+                        })
+                        return res.json({ userId: req.params.userId });
                     })
-                    .then(() => {
-                        return res.json(userData);
-                    });
-            } else {
-                return res.status(400).json({ error: 'user not followed' });
             }
         })
         .catch((err) => {
             console.error(err);
             res.status(500).json({ error: err.code });
-        });
+        });;
+
+    // const userDocument = db.collection('users').doc(req.user.uid);
+    // const followingDocument = userDocument.collection('following').doc(req.params.userId);
+
+    // let userData;
+
+    // userDocument
+    //     .get()
+    //     .then((doc) => {
+    //         if (doc.exists) {
+    //             userData = doc.data();
+    //             userData.userId = doc.id;
+    //             return followingDocument.get()
+    //         } else {
+    //             return res.status(404).json({ error: 'User not found' });
+    //         }
+    //     })
+    //     .then((followDoc) => {
+    //         if (followDoc.exists) {
+    //             followingDocument
+    //                 .delete()
+    //                 .then(() => {
+    //                     userData.followingCount--;
+    //                     userDocument.update({ followingCount: userData.followingCount });
+    //                     db.collection('users').doc(req.params.userId).get()
+    //                         .then(doc => {
+    //                             const followersCount = doc.data().followersCount - 1;
+    //                             doc.ref.update({
+    //                                 followersCount
+    //                             })
+    //                         })
+    //                 })
+    //                 .then(() => {
+    //                     return res.json(userData);
+    //                 });
+    //         } else {
+    //             return res.status(400).json({ error: 'user not followed' });
+    //         }
+    //     })
+    //     .catch((err) => {
+    //         console.error(err);
+    //         res.status(500).json({ error: err.code });
+    //     });
 }

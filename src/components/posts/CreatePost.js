@@ -15,7 +15,8 @@ import Fade from '@material-ui/core/Fade';
 
 import PhotoCamera from '@material-ui/icons/PhotoCamera';
 import { connect } from 'react-redux';
-import { createPost } from '../../store/actions/postActions';
+import { createPost } from '../../store/actions/dataActions';
+import { Typography, CircularProgress } from '@material-ui/core';
 
 const useStyles = ((theme) => ({
     root: {
@@ -57,35 +58,61 @@ const useStyles = ((theme) => ({
     uploadButton: {
         marginLeft: 'auto',
         marginRight: '8px',
+        position: 'relative',
+    },
+    progressSpinner: {
+        position: 'absolute',
     },
     noOutline: {
         outline: 'none',
     },
     mobileItem: {
-        [theme.breakpoints.up("sm")]: {
+        [theme.breakpoints.up("md")]: {
             display: "none"
         },
     },
     desktopItem: {
         margin: 0,
         height: '4em',
-        [theme.breakpoints.down("xs")]: {
+        [theme.breakpoints.down("sm")]: {
             display: "none"
         },
     },
+    errorText: {
+        color: theme.palette.error.main,
+        textAlign: 'center',
+    },
+    previewWindow: {
+        maxHeight: '600px',
+        maxWidth: '100%',
+        display: 'block',
+        objectFit: 'contain',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+    }
 }));
 
 
 class CreatePost extends Component {
     state = {
         open: false,
-        imageName: '',
+        imagefile: '',
         body: '',
         errors: {}
     };
+    componentWillReceiveProps(nextProps) {
+        // if (nextProps.UI.errors) {
+        //     this.setState({
+        //         errors: nextProps.UI.errors
+        //     })
+        // };
+        if (!nextProps.UI.errors && !nextProps.UI.loading) {
+            this.handleClose();
+        }
+    }
 
     handleOpen = () => {
-        this.setState({ open: true });
+        this.setState({ open: true, imagefile: '', body: '', errors: {} });
     };
     handleClose = () => {
         // this.props.clearErrors();
@@ -96,18 +123,44 @@ class CreatePost extends Component {
             [e.target.id]: e.target.value
         })
     };
+    handleImageChange = (e) => {
+        this.setState({
+            imagefile: e.target.files[0]
+        });
+        if (e.target.files && e.target.files[0]) {
+            var reader = new FileReader();
 
+            reader.onload = (eve) => {
+                document.getElementById('preview').setAttribute('src', eve.target.result)
+            };
+
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    }
     handleUpload = (e) => {
         e.preventDefault();
-        const postSubmit = {
-            imageName: this.state.imageName, body: this.state.body
+        if (this.state.imagefile === '') {
+            this.setState({
+                errors: {
+                    imagefile: 'Please select an image'
+                }
+            })
         }
-        this.props.createPost(postSubmit)
-        this.setState({ open: false, errors: {} });
+        else {
+            this.setState({ errors: {} })
+            const image = this.state.imagefile;
+            const formData = new FormData();
+            formData.append('image', image, image.name);
+            formData.append('body', this.state.body);
+            this.props.createPost(formData)
+            // this.setState({ open: false, errors: {} });
+        }
     }
 
     render() {
-        const { classes } = this.props;
+        // const { errors } = this.state;
+        const { classes, UI: { loading } } = this.props;
+        console.log(this.props);
         return (
             <>
                 <IconButton className={classes.mobileItem} color="inherit" onClick={this.handleOpen}>
@@ -144,12 +197,12 @@ class CreatePost extends Component {
                                         <input
                                             accept="image/*"
                                             className={classes.input}
-                                            id="imageName"
+                                            id="imagefile"
                                             multiple
                                             type="file"
-                                            onChange={this.handleChange}
+                                            onChange={this.handleImageChange}
                                         />
-                                        <label htmlFor="imageName">
+                                        <label htmlFor="imagefile">
                                             <Button variant="contained" color="primary" component="span">
                                                 Select Image
                                             <PhotoCamera className={classes.iconPadding} />
@@ -157,7 +210,10 @@ class CreatePost extends Component {
                                         </label>
                                     </Grid>
                                     <Grid item xs={12}>
-                                        Preview window somehow
+                                        {
+                                            this.state.imagefile !== '' && (
+                                                <img className={classes.previewWindow} id="preview" src="http://placehold.it/180" alt="your image" />
+                                            )}
                                     </Grid>
                                     <Grid item xs={12}>
                                         <TextField
@@ -171,10 +227,24 @@ class CreatePost extends Component {
                                             onChange={this.handleChange}
                                         />
                                     </Grid>
+                                    {
+                                        this.state.errors.imagefile && (
+                                            <Grid item xs={12}>
+                                                <Typography variant="body2" className={classes.errorText}>
+                                                    {this.state.errors.imagefile}
+                                                </Typography>
+                                            </Grid>)
+                                    }
                                 </Grid>
                             </CardContent>
                             <CardActions className={classes.cardAction}>
-                                <Button className={classes.uploadButton} variant="contained" color="secondary" onClick={this.handleUpload}>Upload</Button>
+                                <Button className={classes.uploadButton} variant="contained" color="secondary" onClick={this.handleUpload}>Upload
+                                   {
+                                        loading && (
+                                            <CircularProgress color="inherit" size={30} className={classes.progressSpinner} />
+                                        )
+                                    }
+                                </Button>
                             </CardActions>
                         </Card>
                     </Fade>
@@ -184,11 +254,13 @@ class CreatePost extends Component {
     }
 }
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        createPost: (post) => dispatch(createPost(post))
-    }
+const mapStateToProps = (state) => ({
+    UI: state.UI,
+})
+
+const mapDispatchToProps = {
+    createPost
 }
 
-export default connect(null, mapDispatchToProps)(withStyles(useStyles)(CreatePost));
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(useStyles)(CreatePost));
 

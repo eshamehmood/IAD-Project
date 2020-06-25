@@ -12,16 +12,18 @@ module.exports = (req, res, next) => {
     admin.auth().verifyIdToken(idToken)
         .then(decodedToken => {
             req.user = decodedToken;
-            return db
-                .collection('users').doc(req.user.uid).get().then((doc) => {
-                    req.user.username = doc.data().firstName + ' ' + doc.data().lastName;
-                    req.user.imageUrl = doc.data().imageUrl;
-                    return next();
-                });
+            return db.collection('users')
+                .doc(req.user.uid)
+                .get();
         })
-        // .then(data => {
-
-        // })
+        .then(doc => {
+            req.user.username = doc.data().firstName + ' ' + doc.data().lastName;
+            req.user.imageUrl = doc.data().imageUrl;
+            //new ↓
+            req.user.following = doc.data().following;
+            req.user.following.push(req.user.uid);
+            return next();
+        })
         .catch(err => {
             console.error('Error while verifying token', err);
             return res.status(403).json(err);

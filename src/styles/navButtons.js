@@ -2,12 +2,15 @@ import { makeStyles } from '@material-ui/core/styles';
 
 const navButtons = makeStyles((theme) => ({
     desktopItem: {
-        [theme.breakpoints.down("xs")]: {
+        flexGrow: 1,
+        [theme.breakpoints.down("sm")]: {
             display: "none"
         },
     },
     mobileItem: {
-        [theme.breakpoints.up("sm")]: {
+        minWidth: '96px',
+        flexGrow: 1,
+        [theme.breakpoints.up("md")]: {
             display: "none"
         },
     },

@@ -1,50 +1,47 @@
 import React, { Component } from 'react';
 import Post from '../posts/Post'
 import Grid from '@material-ui/core/Grid';
+import CircularProgress from '@material-ui/core/CircularProgress'
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { getPostForHome } from '../../store/actions/postActions'
-import PropTypes from 'prop-types';
+import { getPostForHome, clearUser, clearPosts, atMyPage, notAtMyPage } from '../../store/actions/dataActions'
 
 class Home extends Component {
     componentDidMount() {
-        if (!this.props.auth.uid) return <Redirect to='/signin' />
+        console.log('calling from home')
+        this.props.atMyPage();
+        this.props.clearUser();
         this.props.getPostForHome();
     }
+    componentWillUnmount() {
+        this.props.notAtMyPage();
+        this.props.clearPosts();
+    }
     render() {
-        const { auth, posts, loading } = this.props;
-        if (!auth.uid) return <Redirect to='/signin' />
-        console.log(posts);
-        // let recentPostsMarkup = !loading ? (
-        //     posts && posts.map((post, i) => {
-        //         return (
-        //             <Grid item xs={10} key={post.postId}>
-        //                 <Post post={post} />
-        //             </Grid>
-        //         )
-        //     }
-        //     )
-        //     //     <Post post={
-        //     //         {
-        //     //             postId: "s2nMaZO53Z59z6z163Wr",
-        //     //             body: "posting",
-        //     //             authorName: "a a",
-        //     //             authorId: "qbAJJkTArfePsp7C3xyCUUxuIxf2",
-        //     //             commentCount: 0,
-        //     //             likeCount: 0,
-        //     //             imageName: "",
-        //     //             liked: true,
-        //     //         }
-        //     //     } />
-        // ) : (
-        //         <div>Loading</div>
-        //     )
-        const postItems = this.props.posts.map(post => (
-            <div key={post.id}>
-                <h3>{post.title}</h3>
-                <p>{post.body}</p>
-            </div>
-        ))
+        const { user: { authenticated }, data: { posts, loading } } = this.props;
+        const userLoading = this.props.user.loading;
+        if (!authenticated) return <Redirect to='/signin' />
+        let recentPostsMarkup = !loading && !userLoading ?
+            posts && posts.length !== 0 ? posts.map(post =>
+                <Grid item xs={10} key={post.postId}>
+                    <Post post={post} />
+                </Grid>
+            ) :
+                <Grid item xs={10}>
+                    <Card>
+                        <CardContent> No Post to show. <br /> <br /> Please follow users to see posts.
+                    </CardContent>
+                    </Card>
+                </Grid> :
+            <CircularProgress
+                style={{
+                    margin: 0,
+                    position: 'absolute',
+                    top: '50%'
+                }} />;
         return (
             <Grid
                 container
@@ -54,30 +51,19 @@ class Home extends Component {
                 justify="center"
                 style={{ maxWidth: '100vw', marginTop: '1%' }}
             >
-                {/* {recentPostsMarkup} */}
-                {postItems}
+                {recentPostsMarkup}
             </Grid>
         );
     }
 }
 
-Home.propTypes = {
-    getPostForHome: PropTypes.func.isRequired,
-    posts: PropTypes.array.isRequired
-};
+const mapStateToProps = (state) => ({
+    user: state.user,
+    data: state.data
+})
 
-const mapStateToProps = (state) => {
-    return {
-        posts: state.post.posts,
-        auth: state.firebase.auth,
-        // posts: state.firestore.ordered.posts,
-    }
-}
-
-const mapDispatchToProps = (dispatch) => {
-    return {
-        getPostForHome: () => (dispatch(getPostForHome()))
-    }
+const mapDispatchToProps = {
+    getPostForHome, clearUser, clearPosts, atMyPage, notAtMyPage
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);

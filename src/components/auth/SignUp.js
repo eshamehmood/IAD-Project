@@ -3,29 +3,31 @@ import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
-import Link from '@material-ui/core/Link';
+import MLink from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
+import CircularProgress from '@material-ui/core/CircularProgress'
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
-import { signUp, resetError } from '../../store/actions/authActions';
+import { signupUser } from '../../store/actions/userActions'
+import { Link } from 'react-router-dom';
 
-function Copyright() {
-    return (
-        <Typography variant="body2" color="textSecondary" align="center">
-            {'Copyright © '}
-            <Link color="inherit" href="https://material-ui.com/">
-                Your Website
-      </Link>{' '}
-            {new Date().getFullYear()}
-            {'.'}
-        </Typography>
-    );
-}
+// function Copyright() {
+//     return (
+//         <Typography variant="body2" color="textSecondary" align="center">
+//             {'Copyright © '}
+//             <MLink color="inherit" href="https://material-ui.com/">
+//                 Your Website
+//       </MLink>{' '}
+//             {new Date().getFullYear()}
+//             {'.'}
+//         </Typography>
+//     );
+// }
 
 const useStyles = ((theme) => ({
     paper: {
@@ -44,24 +46,36 @@ const useStyles = ((theme) => ({
     },
     submit: {
         margin: theme.spacing(3, 0, 2),
+        position: 'relative',
+    },
+    progress: {
+        position: 'absolute',
+
     },
     errorText: {
         color: theme.palette.error.main,
         textAlign: 'center',
+        margin: theme.spacing(2, 0, 0),
     },
 }));
 
 
 class SignUp extends Component {
-    state = {
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
+    constructor() {
+        super();
+        this.state = {
+            firstName: '',
+            lastName: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            errors: {}
+        }
     }
-
-    componentWillUnmount() {
-        this.props.resetError();
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.UI.errors) {
+            this.setState({ errors: nextProps.UI.errors });
+        }
     }
 
     handleChange = (e) => {
@@ -71,12 +85,20 @@ class SignUp extends Component {
     }
     handleSignUp = (e) => {
         e.preventDefault();
-        this.props.signUp(this.state);
+        const newUserData = {
+            firstName: this.state.firstName,
+            lastName: this.state.lastName,
+            email: this.state.email,
+            password: this.state.password,
+            confirmPassword: this.state.confirmPassword,
+        }
+        this.props.signupUser(newUserData, this.props.history)
 
     }
     render() {
-        const { classes, auth, authError } = this.props;
-        if (auth.uid) return <Redirect to='/' />
+        const { classes, UI: { loading }, user: { authenticated } } = this.props;
+        const { errors } = this.state;
+        if (authenticated) return <Redirect to='/' />
         return (
             <Container style={{ textAlign: 'left' }} component="main" maxWidth="xs">
                 <CssBaseline />
@@ -99,6 +121,9 @@ class SignUp extends Component {
                                     id="firstName"
                                     label="First Name"
                                     autoFocus
+                                    helperText={errors.firstName}
+                                    error={errors.firstName ? true : false}
+                                    value={this.state.firstName}
                                     onChange={this.handleChange}
                                 />
                             </Grid>
@@ -111,6 +136,9 @@ class SignUp extends Component {
                                     label="Last Name"
                                     name="lastName"
                                     autoComplete="lname"
+                                    helperText={errors.lastName}
+                                    error={errors.lastName ? true : false}
+                                    value={this.state.lastName}
                                     onChange={this.handleChange}
                                 />
                             </Grid>
@@ -123,6 +151,9 @@ class SignUp extends Component {
                                     label="Email Address"
                                     name="email"
                                     autoComplete="email"
+                                    helperText={errors.email}
+                                    error={errors.email ? true : false}
+                                    value={this.state.email}
                                     onChange={this.handleChange}
                                 />
                             </Grid>
@@ -136,6 +167,25 @@ class SignUp extends Component {
                                     type="password"
                                     id="password"
                                     autoComplete="current-password"
+                                    helperText={errors.password}
+                                    error={errors.password ? true : false}
+                                    value={this.state.password}
+                                    onChange={this.handleChange}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    variant="outlined"
+                                    required
+                                    fullWidth
+                                    name="confirmPassword"
+                                    label="Confirm Password"
+                                    type="password"
+                                    id="confirmPassword"
+                                    autoComplete="current-confirm-password"
+                                    helperText={errors.confirmPassword}
+                                    error={errors.confirmPassword ? true : false}
+                                    value={this.state.confirmPassword}
                                     onChange={this.handleChange}
                                 />
                             </Grid>
@@ -147,43 +197,37 @@ class SignUp extends Component {
                             color="primary"
                             className={classes.submit}
                             onClick={this.handleSignUp}
+                            disabled={loading}
                         >
                             Sign Up
+                            {loading && (
+                                <CircularProgress size={30} className={classes.progress} />
+                            )}
                         </Button>
                         <Grid container justify="flex-end">
                             <Grid item>
-                                <Link href="#" variant="body2">
+                                <MLink component={Link} to="/signin" variant="body2">
                                     Already have an account? Sign in
-                                </Link>
+                                </MLink>
                             </Grid>
                         </Grid>
                     </form>
                 </div>
-                <Box mt={5}>
-                    <Typography className={classes.errorText}>
-                        {authError ? authError : null}
-                    </Typography>
-                </Box>
-                <Box mt={5}>
+                {/* <Box mt={5}>
                     <Copyright />
-                </Box>
+                </Box> */}
             </Container>
         );
     }
 }
 
-const mapStateToProps = (state) => {
-    return {
-        auth: state.firebase.auth,
-        authError: state.auth.authError,
-    }
-}
+const mapStateToProps = (state) => ({
+    user: state.user,
+    UI: state.UI,
+})
 
-const mapDispatchToProps = (dispatch) => {
-    return {
-        signUp: (newUser) => dispatch(signUp(newUser)),
-        resetError: () => dispatch(resetError()),
-    }
+const mapDispatchToProps = {
+    signupUser
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(

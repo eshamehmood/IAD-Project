@@ -1,47 +1,54 @@
-import React from 'react';
+import React, { Component } from 'react';
 import SignedOutLinks from './SignedOutLinks'
 import AppBar from '@material-ui/core/AppBar';
 import Typography from '@material-ui/core/Typography';
 import Toolbar from '@material-ui/core/Toolbar';
-import { makeStyles } from '@material-ui/core/styles';
+import { withStyles } from '@material-ui/core/styles';
 import SignedInLinks from './SignedInLinks';
 import { connect } from 'react-redux';
+import SearchBar from './SearchBar'
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = ((theme) => ({
     title: {
         flexGrow: 1,
         textAlign: 'left',
+        marginRight: '10px',
     },
     appBar: {
         minWidth: '280px',
     },
 }));
 
-const Navbar = (props) => {
-    const classes = useStyles();
-    const { auth, profile } = props;
-    const links = auth.uid ? <SignedInLinks profile={profile} /> : <SignedOutLinks />
-    return (
-        <div>
-            <AppBar position="fixed" className={classes.appBar}>
-                <Toolbar>
-                    <Typography variant="h6" color="inherit" className={classes.title} >
-                        Photos
-                    </Typography>
-                    {links}
-                </Toolbar>
-            </AppBar>
-            <Toolbar />
-        </div>
-    );
-}
-
-const mapStateToProps = (state) => {
-    console.log(state);
-    return {
-        auth: state.firebase.auth,
-        profile: state.firebase.profile,
+class Navbar extends Component {
+    render() {
+        const { classes, user: { authenticated, credentials: { firstName, id } } } = this.props;
+        console.log(this.props)
+        const links = authenticated ? <SignedInLinks firstName={firstName} id={id} /> : <SignedOutLinks />
+        const searchBar = firstName ? <SearchBar /> : null
+        return (
+            <div>
+                <AppBar position="fixed" className={classes.appBar}>
+                    <Toolbar>
+                        <Typography variant="h6" color="inherit" className={classes.title} >
+                            Photos
+                        </Typography>
+                        {searchBar}
+                        {links}
+                    </Toolbar>
+                </AppBar>
+                <Toolbar />
+            </div>
+        );
     }
 }
 
-export default connect(mapStateToProps)(Navbar);
+const mapStateToProps = (state, ownProps) => ({
+    user: state.user,
+    ownProps: ownProps,
+})
+
+const mapDispatchToProps = {
+
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(withStyles(useStyles)(Navbar));

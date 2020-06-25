@@ -1,5 +1,6 @@
-import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+
+import React, { Component } from 'react';
+import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
@@ -9,9 +10,13 @@ import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
 import FolderIcon from '@material-ui/icons/Folder';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { NavLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { connect } from 'react-redux';
+import { deleteComment } from '../../store/actions/dataActions';
+import moment from 'moment';
 
-const useStyles = makeStyles((theme) => ({
+
+const useStyles = ((theme) => ({
     root: {
         flexGrow: 1,
         backgroundColor: theme.palette.background.paper,
@@ -23,33 +28,64 @@ const useStyles = makeStyles((theme) => ({
     },
     item: {
         padding: '0px',
-    }
+    },
+    createdAt: {
+        color: theme.palette.text.disabled,
+        marginLeft: '8px',
+    },
 }));
 
-const Comment = ({ comment }) => {
-    const classes = useStyles();
-    return (
-        <div className={classes.root}>
-            <List dense={false} className={classes.item}>
-                <ListItem>
-                    <ListItemAvatar>
-                        <Avatar>
-                            <FolderIcon />
-                        </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                        primary={<NavLink to="/user/R" className={classes.link}>{comment.username}</NavLink>}
-                        secondary={comment.comment}
-                    />
-                    <ListItemSecondaryAction>
-                        <IconButton edge="end" aria-label="delete">
-                            <DeleteIcon />
-                        </IconButton>
-                    </ListItemSecondaryAction>
-                </ListItem>
-            </List>
-        </div>
-    );
+class Comment extends Component {
+    state = {
+        disable: false
+    }
+    handleDeleteClick = (e) => {
+        const comment = this.props.comment;
+        this.setState({ disable: true })
+        this.props.deleteComment(comment.postId, comment.commentId);
+    }
+    render() {
+        const { classes, comment: { body, createdAt, authorId, authorUsername, authorImageUrl }, user: { credentials: { id } } } = this.props;
+        return (
+            <div className={classes.root}>
+                <List dense={false} className={classes.item}>
+                    <ListItem>
+                        <ListItemAvatar>
+                            <Avatar src={authorImageUrl}>
+                                <FolderIcon />
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                            primary={<><Link to="/user/R" className={classes.link}>
+                                {authorUsername}
+                            </Link>
+                                <small className={classes.createdAt}>{moment(createdAt).fromNow()}</small></>}
+                            secondary={body}
+                        />
+                        {
+                            id && id === authorId &&
+                            <ListItemSecondaryAction>
+                                <IconButton disabled={this.state.disable} aria-label="delete" onClick={this.handleDeleteClick}>
+                                    <DeleteIcon />
+                                </IconButton>
+                            </ListItemSecondaryAction>
+                        }
+                    </ListItem>
+                </List>
+            </div>
+        );
+    }
 }
 
-export default Comment;
+const mapStateToProps = (state) => ({
+    user: state.user,
+})
+
+const mapDispatchToProps = {
+    deleteComment
+}
+
+
+export default connect(mapStateToProps, mapDispatchToProps)
+    (withStyles(useStyles)(Comment)
+    );

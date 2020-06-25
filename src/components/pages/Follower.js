@@ -9,7 +9,7 @@ import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
 import FolderIcon from '@material-ui/icons/Folder';
 import DeleteIcon from '@material-ui/icons/Delete';
-import { NavLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 
 const useStyles = ((theme) => ({
@@ -41,7 +41,7 @@ class Follower extends Component {
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText
-                            primary={<NavLink to="/user/R" className={classes.link}>Username</NavLink>}
+                            primary={<Link to="/user/R" className={classes.link}>Username</Link>}
                             secondary='ranting text text text '
                         />
                         <ListItemSecondaryAction>
