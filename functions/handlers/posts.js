@@ -2,7 +2,6 @@ const { db, admin } = require('../util/admin');
 const config = require('../util/config');
 
 exports.getAllPosts = (req, res) => {
-    //Quering for the user
     db.collection('posts')
         .where('authorId', 'in', req.user.following)
         .orderBy('createdAt', 'desc')
@@ -29,72 +28,6 @@ exports.getAllPosts = (req, res) => {
             console.error(err);
             res.status(500).json({ error: err.code });
         });
-
-    //OLD CODE
-    // db.collection('posts')
-    //     .orderBy('createdAt', 'desc')
-    //     .get()
-    //     .then((data) => {
-    //         let posts = [];
-    //         data.forEach((doc) => {
-    //             posts.push({
-    //                 postId: doc.id,
-    //                 authorId: doc.data().authorId,
-    //                 authorImageUrl: doc.data().authorImageUrl,
-    //                 authorUsername: doc.data().authorUsername,
-    //                 body: doc.data().body,
-    //                 commentCount: doc.data().commentCount,
-    //                 createdAt: doc.data().createdAt,
-    //                 imageUrl: doc.data().imageUrl,
-    //                 likeCount: doc.data().likeCount,
-    //                 likedBy: doc.data().likedBy
-    //             });
-    //         })
-    //         return res.json(posts);
-    //     })
-    //     .catch((err) => {
-    //         console.error(err);
-    //         res.status(500).json({ error: err.code });
-    //     });
-
-    // db.collection('posts')
-    //     .orderBy('createdAt', 'desc')
-    //     .get()
-    //     .then((data) => {
-    //         const promises = [];
-    //         let posts = [];
-    //         data.forEach((doc) => {
-    //             let liked = false;
-    //             let promise = db.collection('posts').doc(doc.id).collection('likes').doc(req.user.uid).get()
-    //                 .then((likedDoc) => {
-    //                     if (likedDoc.exists) {
-    //                         liked = true;
-    //                     }
-    //                     posts.push({
-    //                         postId: doc.id,
-    //                         authorId: doc.data().authorId,
-    //                         authorImageUrl: doc.data().authorImageUrl,
-    //                         authorUsername: doc.data().authorUsername,
-    //                         body: doc.data().body,
-    //                         commentCount: doc.data().commentCount,
-    //                         createdAt: doc.data().createdAt,
-    //                         imageUrl: doc.data().imageUrl,
-    //                         likeCount: doc.data().likeCount,
-    //                         liked: liked
-    //                     });
-    //                     return;
-    //                 })
-    //                 .catch(err => res.status(500).json({ error: err.code }))
-    //             promises.push(promise);
-    //         });
-    //         Promise.all(promises).then(() => {
-    //             return res.json(posts);
-    //         })
-    //     })
-    //     .catch((err) => {
-    //         console.error(err);
-    //         res.status(500).json({ error: err.code });
-    //     });
 }
 
 exports.getUserPosts = (req, res) => {
@@ -239,7 +172,6 @@ exports.getComments = (req, res) => {
             if (!doc.exists) {
                 return res.status(404).json({ error: 'Post not found' })
             }
-            // postData = doc.data();
             postData.postId = doc.id;
             return db
                 .collection('comments')
@@ -351,55 +283,6 @@ exports.likePost = (req, res) => {
             console.error(err);
             res.status(500).json({ error: err.code });
         });;
-
-    // const postDocument = db.collection('posts').doc(req.params.postId);
-    // const likeDocument = postDocument.collection('likes').doc(req.user.uid);
-    // let postData;
-    // postDocument
-    //     .get()
-    //     .then((doc) => {
-    //         if (doc.exists) {
-    //             postData = doc.data();
-    //             postData.postId = doc.id;
-    //             return likeDocument.get()
-    //         } else {
-    //             return res.status(404).json({ error: 'Post not found' });
-    //         }
-    //     })
-    //     .then((likeDoc) => {
-    //         if (!likeDoc.exists) {
-    //             likeDocument
-    //                 .set({
-    //                     liked: true,
-    //                 })
-    //                 .then(() => {
-    //                     postData.likeCount++;
-    //                     postDocument.update({ likeCount: postData.likeCount });
-    //                 })
-    //                 .then(() => {
-    //                     return res.json({
-    //                         likeCount: postData.likeCount,
-    //                         // authorImageUrl: postData,
-    //                         // body: postData,
-    //                         // commentCount: postData,
-    //                         // authorUsername: postData,
-    //                         // authorId: postData,
-    //                         // imageUrl: postData,
-    //                         // createdAt: postData,
-    //                         postId: postData.postId,
-    //                         liked: true,
-    //                     }
-    //                     );
-    //                 });
-    //         } else {
-    //             return res.status(400).json({ error: 'Post already liked' });
-    //         }
-    //     })
-    //     .catch((err) => {
-    //         console.error(err);
-    //         res.status(500).json({ error: err.code });
-    //     });
-
 }
 
 exports.unlikePost = (req, res) => {
@@ -425,46 +308,6 @@ exports.unlikePost = (req, res) => {
             console.error(err);
             res.status(500).json({ error: err.code });
         });;
-
-    // const postDocument = db.collection('posts').doc(req.params.postId);
-    // const likeDocument = postDocument.collection('likes').doc(req.user.uid);
-    // let postData;
-    // postDocument
-    //     .get()
-    //     .then((doc) => {
-    //         if (doc.exists) {
-    //             postData = doc.data();
-    //             postData.postId = doc.id;
-    //             return likeDocument.get()
-    //         } else {
-    //             return res.status(404).json({ error: 'Post not found' });
-    //         }
-    //     })
-    //     .then((likeDoc) => {
-    //         if (!likeDoc.exists) {
-    //             return res.status(400).json({ error: 'Post not liked' });
-    //         } else {
-    //             likeDocument
-    //                 .delete()
-    //                 .then(() => {
-    //                     postData.likeCount--;
-    //                     postDocument.update({ likeCount: postData.likeCount });
-    //                 })
-    //                 .then(() => {
-    //                     // return res.json(postData);
-    //                     return res.json({
-    //                         likeCount: postData.likeCount,
-    //                         postId: postData.postId,
-    //                         liked: false,
-    //                     }
-    //                     );
-    //                 });
-    //         }
-    //     })
-    //     .catch((err) => {
-    //         console.error(err);
-    //         res.status(500).json({ error: err.code });
-    //     });
 }
 
 exports.deletePost = (req, res) => {

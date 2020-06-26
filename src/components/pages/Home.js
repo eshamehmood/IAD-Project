@@ -11,7 +11,6 @@ import { getPostForHome, clearUser, clearPosts, atMyPage, notAtMyPage } from '..
 
 class Home extends Component {
     componentDidMount() {
-        console.log('calling from home')
         this.props.atMyPage();
         this.props.clearUser();
         this.props.getPostForHome();

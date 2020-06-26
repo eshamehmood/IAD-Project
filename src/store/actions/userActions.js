@@ -7,8 +7,23 @@ import {
     LOADING_USER,
     FOLLOW_USER,
     UNFOLLOW_USER,
+    STOP_LOADING_UI,
 } from '../types';
 import axios from 'axios';
+
+export const getUserData = () => (dispatch) => {
+    dispatch({ type: LOADING_USER })
+    axios.get('/user')
+        .then(res => {
+            dispatch({
+                type: SET_USER,
+                payload: res.data,
+            })
+            dispatch({ type: STOP_LOADING_UI });
+            dispatch({ type: CLEAR_ERRORS });
+        })
+        .catch(err => console.log(err))
+}
 
 export const loginUser = (userData, history) => (dispatch) => {
     dispatch({ type: LOADING_UI });
@@ -23,19 +38,6 @@ export const loginUser = (userData, history) => (dispatch) => {
                 payload: err.response.data
             });
         });
-}
-
-export const getUserData = () => (dispatch) => {
-    dispatch({ type: LOADING_USER })
-    axios.get('/user')
-        .then(res => {
-            dispatch({
-                type: SET_USER,
-                payload: res.data,
-            })
-            dispatch({ type: CLEAR_ERRORS });
-        })
-        .catch(err => console.log(err))
 }
 
 export const signupUser = (newUserData, history) => (dispatch) => {
@@ -55,7 +57,7 @@ export const signupUser = (newUserData, history) => (dispatch) => {
 
 const setAuthorizationHeader = (token) => {
     const FBIdToken = `Bearer ${token}`;
-    localStorage.setItem('FBIdToken', FBIdToken);
+    localStorage.setItem('FBIdToken', token);
     axios.defaults.headers.common['Authorization'] = FBIdToken;
 }
 

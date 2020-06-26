@@ -1,27 +1,20 @@
 import React, { Component } from 'react';
-import Card from '@material-ui/core/Card';
-import CardContent from '@material-ui/core/CardContent';
-import CardMedia from '@material-ui/core/CardMedia';
 import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import Badge from '@material-ui/core/Badge';
 import IconButton from '@material-ui/core/IconButton';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
 import Grid from '@material-ui/core/Grid';
 import Tooltip from '@material-ui/core/Tooltip';
 import TextField from '@material-ui/core/TextField';
 import CircularProgress from '@material-ui/core/CircularProgress'
 import Paper from '@material-ui/core/Paper';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Container from '@material-ui/core/Container';
 import { withStyles } from '@material-ui/core/styles';
 import AddAPhotoIcon from '@material-ui/icons/AddAPhoto';
 import LibraryAddCheckIcon from '@material-ui/icons/LibraryAddCheck';
 import LibraryAddIcon from '@material-ui/icons/LibraryAdd';
 import EditIcon from '@material-ui/icons/Edit';
 import Post from '../posts/Post';
-import Follower from './Follower';
 import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { uploadImage, editUserDetails, followUser, unfollowUser } from '../../store/actions/userActions'
@@ -153,20 +146,18 @@ class UserPage extends Component {
     render() {
         const { classes,
             data: {
-                // user: { firstName, lastName, createdAt, imageUrl, followersCount, followingCount, bio },
                 posts, loading, userLoading },
             user: { credentials: { id, following }, authenticated },
             userId,
         } = this.props;
         const meLoading = this.props.user.loading;
-        let { data: { user: { firstName, lastName, createdAt, imageUrl, followersCount, followingCount, bio } } } = this.props;
+        let { data: { user: { firstName, lastName, imageUrl, followersCount, followingCount, bio } } } = this.props;
         if (!authenticated) return <Redirect to='/signin' />
 
         if (id && id === userId) {
             const tempuser = this.props.user.credentials;
             firstName = tempuser.firstName;
             lastName = tempuser.lastName;
-            createdAt = tempuser.createdAt;
             imageUrl = tempuser.imageUrl;
             followersCount = tempuser.followersCount;
             followingCount = tempuser.followingCount;
@@ -194,18 +185,6 @@ class UserPage extends Component {
                     Follow <LibraryAddIcon className={classes.iconMargin} />
                 </Button>
             ) : (<div></div>)
-
-        // const followed = !userLoading && following.includes(userId) ? (
-        //     <Button classes={{ contained: classes.followButton }}
-        //         className={classes.capitalize} size="large" variant="contained" color="secondary" onClick={this.handleFollowClick} >
-        //         Following <LibraryAddCheckIcon className={classes.iconMargin} />
-        //     </Button>
-        // ) : (
-
-        //         <Button className={classes.capitalize} size="large" variant="outlined" color="secondary" onClick={this.handleFollowClick}>
-        //             Follow <LibraryAddIcon className={classes.iconMargin} />
-        //         </Button>
-        //     );
 
         let bioMarkup = userId === id ?
             this.state.changingBio ?
@@ -354,44 +333,11 @@ class UserPage extends Component {
                 style={{ maxWidth: '100vw', marginTop: '1%' }}
             >
                 {userInfoMarkup}
-                {/* <Grid
-                    container
-                    alignItems="center"
-                    justify="center"
-                    item xs={10}
-                >
-                    <div className={classes.size}>
-                        <ButtonGroup variant="outlined" color="primary" fullWidth={true}>
-                            <Button>Post</Button>
-                            <Button>{followersCount} Followers</Button>
-                        </ButtonGroup>
-                    </div>
-                </Grid> */}
-                {/* //Posts */}
                 {userPostsMarkup}
-                {/* //Followers */}
-                {/* <Grid
-                    container
-                    spacing={4}
-                    alignItems="center"
-                    justify="center"
-                    direction="column"
-                    item xs={10}>
-                    <Grid item xs={12} className={classes.size}>
-                        <Follower />
-                    </Grid>
-                </Grid> */}
             </Grid>
         );
     }
 }
-
-// const mapStateToProps = (state, ownProps) => {
-//     console.log(ownProps)
-//     return {
-//         state
-//     }
-// }
 
 const mapStateToProps = (state, ownProps) => ({
     userId: ownProps.match.params.userId,

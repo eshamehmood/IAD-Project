@@ -12,13 +12,12 @@ import {
     LOADING_USERDATA,
     CLEAR_USERDATA,
     CLEAR_POSTS,
-    SET_USERPOSTS,
     SET_COMMENTS,
     SUBMIT_COMMENT,
     DELETE_COMMENT,
     SEARCH_USER,
     MYPAGE,
-    NOT_MYPAGE
+    NOT_MYPAGE,
 } from '../types';
 import axios from 'axios';
 
@@ -146,64 +145,3 @@ export const atMyPage = () => dispatch => {
 export const notAtMyPage = () => dispatch => {
     dispatch({ type: NOT_MYPAGE })
 }
-// export const getPostForHome = () => {
-//     return (dispatch, getState, { getFirebase, getFirestore }) => {
-//         //make async call to database
-//         dispatch({ type: 'LOADING_POST', loading: true })
-//         const firestore = getFirestore();
-//         const userId = getState().firebase.auth.uid;
-//         firestore.collection('posts').orderBy('createdAt', 'desc').get()
-//             .then((data) => {
-//                 let posts = [];
-//                 let liked = false;
-//                 data.forEach((doc) => {
-//                     firestore.collection('posts').doc(doc.id).collection('likes').doc(userId).get().then(userLike => {
-//                         if (userLike.exists) {
-//                             liked = true;
-//                         }
-//                         else {
-//                             liked = false;
-//                         }
-//                     }).then(() => {
-//                         posts.push({
-//                             postId: doc.id,
-//                             body: doc.data().body,
-//                             authorName: doc.data().authorName,
-//                             authorId: doc.data().authorId,
-//                             // createdAt: moment(doc.data().createdAt.toDate()).calendar(),
-//                             createdAt: doc.data().createdAt,
-//                             commentCount: doc.data().commentCount,
-//                             likeCount: doc.data().likeCount,
-//                             imageName: doc.data().imageName,
-//                             liked: liked,
-//                         });
-//                     }).catch(err => {
-//                         dispatch({ type: 'GET_POSTS_HOME_ERROR', err })
-//                     })
-//                 })
-//                 dispatch({ type: 'GET_POSTS_HOME', posts: posts, loading: false })
-//             }).catch((err) => {
-//                 dispatch({ type: 'GET_POSTS_HOME_ERROR', err })
-//             })
-//     }
-// // }
-
-
-// export const createComment = (comment) => {
-//     return (dispatch, getState, { getFirebase, getFirestore }) => {
-//         //make async call to database
-//         const firestore = getFirestore();
-//         const profile = getState().firebase.profile;
-//         const authorId = getState().firebase.auth.uid;
-//         firestore.collection('comments').add({
-//             ...comment,
-//             authorId: authorId,
-//             authorName: profile.firstName + ' ' + profile.lastName,
-//             createdAt: new Date(),
-//         }).then(() => {
-//             dispatch({ type: 'CREATE_COMMENT', comment });
-//         }).catch((err) => {
-//             dispatch({ type: 'CREATE_COMMENT_ERROR', err })
-//         });
-//     }
-// }

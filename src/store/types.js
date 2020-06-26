@@ -22,7 +22,6 @@ export const CREATE_POST = 'CREATE_POST';
 export const SUBMIT_COMMENT = 'SUBMIT_COMMENT';
 export const SET_USERDATA = 'SET_USERDATA';
 export const CLEAR_USERDATA = 'CLEAR_USERDATA';
-export const SET_USERPOSTS = 'SET_USERPOSTS';
 export const SET_COMMENTS = 'SET_COMMENTS';
 export const DELETE_COMMENT = 'DELETE_COMMENT';
 export const SEARCH_USER = 'SEARCH_USER';

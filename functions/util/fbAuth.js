@@ -19,7 +19,6 @@ module.exports = (req, res, next) => {
         .then(doc => {
             req.user.username = doc.data().firstName + ' ' + doc.data().lastName;
             req.user.imageUrl = doc.data().imageUrl;
-            //new ↓
             req.user.following = doc.data().following;
             req.user.following.push(req.user.uid);
             return next();

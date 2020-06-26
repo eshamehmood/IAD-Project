@@ -21,10 +21,9 @@ const useStyles = ((theme) => ({
 
 class Navbar extends Component {
     render() {
-        const { classes, user: { authenticated, credentials: { firstName, id } } } = this.props;
-        console.log(this.props)
-        const links = authenticated ? <SignedInLinks firstName={firstName} id={id} /> : <SignedOutLinks />
-        const searchBar = firstName ? <SearchBar /> : null
+        const { classes, user: { authenticated, credentials: { firstName, id } }, UI: { loading } } = this.props;
+        const links = authenticated ? <SignedInLinks firstName={firstName} id={id} /> : <SignedOutLinks />;
+        const searchBar = firstName && <SearchBar />;
         return (
             <div>
                 <AppBar position="fixed" className={classes.appBar}>
@@ -44,7 +43,7 @@ class Navbar extends Component {
 
 const mapStateToProps = (state, ownProps) => ({
     user: state.user,
-    ownProps: ownProps,
+    UI: state.UI,
 })
 
 const mapDispatchToProps = {

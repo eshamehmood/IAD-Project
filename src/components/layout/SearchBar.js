@@ -2,11 +2,9 @@ import React, { Component } from 'react';
 import { fade, withStyles } from '@material-ui/core/styles';
 import { connect } from 'react-redux';
 import { search } from '../../store/actions/dataActions'
-import { Redirect } from 'react-router-dom';
 import { withRouter } from 'react-router-dom';
 
 import InputBase from '@material-ui/core/InputBase';
-import IconButton from '@material-ui/core/IconButton';
 import SearchIcon from '@material-ui/icons/Search';
 
 const useStyles = ((theme) => ({
@@ -21,7 +19,6 @@ const useStyles = ((theme) => ({
         },
         marginRight: theme.spacing(2),
         marginLeft: 0,
-        // width: '100%',
         [theme.breakpoints.up('sm')]: {
             marginLeft: theme.spacing(3),
             width: 'auto',
@@ -34,14 +31,12 @@ const useStyles = ((theme) => ({
         pointerEvents: 'none',
         display: 'flex',
         alignItems: 'center',
-        // justifyContent: 'center',z
     },
     inputRoot: {
         color: 'inherit',
     },
     inputInput: {
         padding: theme.spacing(1, 1, 1, 0),
-        // vertical padding + font size from searchIcon
         paddingLeft: `calc(1em + ${theme.spacing(4)}px)`,
         transition: theme.transitions.create('width'),
         width: '100%',
@@ -59,7 +54,7 @@ class SearchBar extends Component {
         searchText: '',
     }
     handleSearchSubmit = (e) => {
-        this.props.search(this.state.searchText);
+        this.props.search(this.state.searchText.toLowerCase());
     }
     handleKeyDown = (e) => {
         if (e.key === 'Enter') {
@@ -96,9 +91,6 @@ class SearchBar extends Component {
                     onChange={this.handleChange}
                     onKeyDown={this.handleKeyDown}
                 />
-                {/* <IconButton type="submit" className={classes.iconButton} aria-label="search">
-                    <SearchIcon className={classes.iconColour} />
-                </IconButton> */}
             </div>
         );
     }

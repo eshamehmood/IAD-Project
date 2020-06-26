@@ -9,7 +9,6 @@ import {
     SET_USERDATA,
     LOADING_USERDATA,
     CLEAR_USERDATA,
-    SET_USERPOSTS,
     FOLLOW_USER,
     UNFOLLOW_USER,
     SET_COMMENTS,
@@ -65,7 +64,6 @@ export default function (state = initialState, action) {
                 )
             };
         case CREATE_POST:
-            console.log(state.mypage, 'from createpost reducer')
             if (state.mypage) {
                 return {
                     ...state,
@@ -80,10 +78,6 @@ export default function (state = initialState, action) {
                 (post) => post.postId === action.payload
             );
             state.posts.splice(index, 1);
-            const userindex = state.userPosts.findIndex(
-                (userPost) => userPost.postId === action.payload
-            );
-            state.userPosts.splice(userindex, 1);
             return {
                 ...state
             };

@@ -77,13 +77,6 @@ exports.login = (req, res) => {
         .then(token => res.json({ token }))
         .catch(err => {
             console.error(err);
-            // if (err.code === 'auth/wrong-password') {
-            //     return res.status(400).json({ password: 'Incorrect password' })
-            // }
-            // else if (err.code === 'auth/user-not-found') {
-            //     return res.status(400).json({ email: `User doesn't exist` })
-            // }
-            // else {
             return res.status(500).json({ general: 'Wrong credentials, please try again' })
         })
 
@@ -189,42 +182,6 @@ exports.getUserDetails = (req, res) => {
             console.error(err);
             return res.status(500).json({ error: err.message });
         });
-
-    // let userData = {};
-    // db.doc(`/users/${req.params.userId}`)
-    //     .get()
-    //     .then((doc) => {
-    //         if (doc.exists) {
-    //             userData.user = doc.data();
-    //             return db
-    //                 .collection("posts")
-    //                 .where("authorId", "==", req.params.userId)
-    //                 .orderBy("createdAt", "desc")
-    //                 .get();
-    //         } else {
-    //             return res.status(404).json({ errror: "User not found" });
-    //         }
-    //     })
-    //     .then((data) => {
-    //         userData.posts = [];
-    //         data.forEach((doc) => {
-    //             userData.posts.push({
-    //                 body: doc.data().body,
-    //                 imageUrl: doc.data().imageUrl,
-    //                 authorId: doc.data().authorId,
-    //                 authorImageUrl: doc.data().authorImageUrl,
-    //                 createdAt: doc.data().createdAt,
-    //                 likeCount: doc.data().likeCount,
-    //                 commentCount: doc.data().commentCount,
-    //                 postId: doc.id,
-    //             });
-    //         });
-    //         return res.json(userData);
-    //     })
-    //     .catch((err) => {
-    //         console.error(err);
-    //         return res.status(500).json({ error: err.code });
-    //     });
 }
 exports.searchUsers = (req, res) => {
     db.collection('users')
@@ -275,52 +232,6 @@ exports.followUser = (req, res) => {
             console.error(err);
             res.status(500).json({ error: err.code });
         });;
-
-
-    // const userDocument = db.collection('users').doc(req.user.uid);
-    // const followingDocument = userDocument.collection('following').doc(req.params.userId);
-
-    // let userData;
-
-    // userDocument
-    //     .get()
-    //     .then((doc) => {
-    //         if (doc.exists) {
-    //             userData = doc.data();
-    //             userData.userId = doc.id;
-    //             return followingDocument.get()
-    //         } else {
-    //             return res.status(404).json({ error: 'User not found' });
-    //         }
-    //     })
-    //     .then((followDoc) => {
-    //         if (!followDoc.exists) {
-    //             followingDocument
-    //                 .set({
-    //                     follow: true,
-    //                 })
-    //                 .then(() => {
-    //                     userData.followingCount++;
-    //                     userDocument.update({ followingCount: userData.followingCount });
-    //                     db.collection('users').doc(req.params.userId).get()
-    //                         .then(doc => {
-    //                             const followersCount = doc.data().followersCount + 1;
-    //                             doc.ref.update({
-    //                                 followersCount
-    //                             })
-    //                         })
-    //                 })
-    //                 .then(() => {
-    //                     return res.json(userData);
-    //                 });
-    //         } else {
-    //             return res.status(400).json({ error: 'User already followed' });
-    //         }
-    //     })
-    //     .catch((err) => {
-    //         console.error(err);
-    //         res.status(500).json({ error: err.code });
-    //     });
 }
 
 exports.unfollowUser = (req, res) => {
@@ -350,47 +261,4 @@ exports.unfollowUser = (req, res) => {
             console.error(err);
             res.status(500).json({ error: err.code });
         });;
-
-    // const userDocument = db.collection('users').doc(req.user.uid);
-    // const followingDocument = userDocument.collection('following').doc(req.params.userId);
-
-    // let userData;
-
-    // userDocument
-    //     .get()
-    //     .then((doc) => {
-    //         if (doc.exists) {
-    //             userData = doc.data();
-    //             userData.userId = doc.id;
-    //             return followingDocument.get()
-    //         } else {
-    //             return res.status(404).json({ error: 'User not found' });
-    //         }
-    //     })
-    //     .then((followDoc) => {
-    //         if (followDoc.exists) {
-    //             followingDocument
-    //                 .delete()
-    //                 .then(() => {
-    //                     userData.followingCount--;
-    //                     userDocument.update({ followingCount: userData.followingCount });
-    //                     db.collection('users').doc(req.params.userId).get()
-    //                         .then(doc => {
-    //                             const followersCount = doc.data().followersCount - 1;
-    //                             doc.ref.update({
-    //                                 followersCount
-    //                             })
-    //                         })
-    //                 })
-    //                 .then(() => {
-    //                     return res.json(userData);
-    //                 });
-    //         } else {
-    //             return res.status(400).json({ error: 'user not followed' });
-    //         }
-    //     })
-    //     .catch((err) => {
-    //         console.error(err);
-    //         res.status(500).json({ error: err.code });
-    //     });
 }

@@ -5,7 +5,6 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import TextField from '@material-ui/core/TextField';
 import MLink from '@material-ui/core/Link';
 import Grid from '@material-ui/core/Grid';
-import Box from '@material-ui/core/Box';
 import CircularProgress from '@material-ui/core/CircularProgress'
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
@@ -15,19 +14,6 @@ import { connect } from 'react-redux';
 import { Redirect } from 'react-router-dom';
 import { signupUser } from '../../store/actions/userActions'
 import { Link } from 'react-router-dom';
-
-// function Copyright() {
-//     return (
-//         <Typography variant="body2" color="textSecondary" align="center">
-//             {'Copyright © '}
-//             <MLink color="inherit" href="https://material-ui.com/">
-//                 Your Website
-//       </MLink>{' '}
-//             {new Date().getFullYear()}
-//             {'.'}
-//         </Typography>
-//     );
-// }
 
 const useStyles = ((theme) => ({
     paper: {
@@ -86,8 +72,8 @@ class SignUp extends Component {
     handleSignUp = (e) => {
         e.preventDefault();
         const newUserData = {
-            firstName: this.state.firstName,
-            lastName: this.state.lastName,
+            firstName: this.state.firstName.toLowerCase(),
+            lastName: this.state.lastName.toLowerCase(),
             email: this.state.email,
             password: this.state.password,
             confirmPassword: this.state.confirmPassword,
@@ -97,8 +83,9 @@ class SignUp extends Component {
     }
     render() {
         const { classes, UI: { loading }, user: { authenticated } } = this.props;
+        const userLoading = this.props.user.loading;
         const { errors } = this.state;
-        if (authenticated) return <Redirect to='/' />
+        if (authenticated && !userLoading) return <Redirect to='/' />
         return (
             <Container style={{ textAlign: 'left' }} component="main" maxWidth="xs">
                 <CssBaseline />
@@ -213,9 +200,6 @@ class SignUp extends Component {
                         </Grid>
                     </form>
                 </div>
-                {/* <Box mt={5}>
-                    <Copyright />
-                </Box> */}
             </Container>
         );
     }

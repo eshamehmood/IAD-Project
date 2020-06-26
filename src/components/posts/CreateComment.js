@@ -1,16 +1,10 @@
 import React, { Component } from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import List from '@material-ui/core/List';
 import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
-import FolderIcon from '@material-ui/icons/Folder';
 import SendIcon from '@material-ui/icons/Send';
 import Paper from '@material-ui/core/Paper';
-import InputBase from '@material-ui/core/InputBase';
-import Divider from '@material-ui/core/Divider';
-
 import TextField from '@material-ui/core/TextField';
-
 
 import { connect } from 'react-redux';
 import { createComment } from '../../store/actions/dataActions';
@@ -74,7 +68,6 @@ class CreateComment extends Component {
                     <Avatar className={classes.avatar} src={imageUrl}>
                     </Avatar>
                     <TextField
-                        // label="Outlined secondary"
                         variant="outlined"
                         color="secondary"
                         className={classes.input}
@@ -83,43 +76,15 @@ class CreateComment extends Component {
                         placeholder="Write a comment"
                         onChange={this.handleChange}
                         required
-                        // helperText={this.state.errors.body}
-                        // error={this.state.body ? true : false}
                         size="small"
                         fullWidth
                         autoComplete="off"
                     />
-                    {/* <Divider className={classes.divider} orientation="vertical" /> */}
                     <IconButton color="secondary" className={classes.iconButton} aria-label="directions" onClick={this.handleSend} >
                         <SendIcon />
                     </IconButton>
                 </Paper>
             </div>
-
-
-            // <div className={classes.root}>
-            //     <List dense={false}>
-            //         <Paper component="form" className={classes.paper}>
-            //             <Avatar src={imageUrl}>
-            //             </Avatar>
-            //             <InputBase
-            //                 className={classes.input}
-            //                 id='body'
-            //                 value={this.state.body}
-            //                 placeholder="Write a comment"
-            //                 onChange={this.handleChange}
-            //                 required
-            //                 helperText={this.state.errors.body}
-            //                 error={this.state.body ? true : false}
-            //                 autoComplete="comment"
-            //             />
-            //             <Divider className={classes.divider} orientation="vertical" />
-            //             <IconButton color="secondary" className={classes.iconButton} aria-label="directions" onClick={this.handleSend} >
-            //                 <SendIcon />
-            //             </IconButton>
-            //         </Paper>
-            //     </List>
-            // </div >
         );
     }
 }

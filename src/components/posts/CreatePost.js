@@ -101,11 +101,6 @@ class CreatePost extends Component {
         errors: {}
     };
     componentWillReceiveProps(nextProps) {
-        // if (nextProps.UI.errors) {
-        //     this.setState({
-        //         errors: nextProps.UI.errors
-        //     })
-        // };
         if (!nextProps.UI.errors && !nextProps.UI.loading) {
             this.handleClose();
         }
@@ -115,7 +110,6 @@ class CreatePost extends Component {
         this.setState({ open: true, imagefile: '', body: '', errors: {} });
     };
     handleClose = () => {
-        // this.props.clearErrors();
         this.setState({ open: false, errors: {} });
     };
     handleChange = (e) => {
@@ -153,14 +147,11 @@ class CreatePost extends Component {
             formData.append('image', image, image.name);
             formData.append('body', this.state.body);
             this.props.createPost(formData)
-            // this.setState({ open: false, errors: {} });
         }
     }
 
     render() {
-        // const { errors } = this.state;
         const { classes, UI: { loading } } = this.props;
-        console.log(this.props);
         return (
             <>
                 <IconButton className={classes.mobileItem} color="inherit" onClick={this.handleOpen}>
@@ -212,7 +203,7 @@ class CreatePost extends Component {
                                     <Grid item xs={12}>
                                         {
                                             this.state.imagefile !== '' && (
-                                                <img className={classes.previewWindow} id="preview" src="http://placehold.it/180" alt="your image" />
+                                                <img className={classes.previewWindow} id="preview" src="http://placehold.it/180" alt="Your Post" />
                                             )}
                                     </Grid>
                                     <Grid item xs={12}>

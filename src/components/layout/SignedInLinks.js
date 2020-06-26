@@ -55,9 +55,6 @@ const SignedInLinks = (props) => {
                     <Button color="inherit" size="large" className={classes.button} component={NavLink} to={`/users/${props.id}`}>
                         {props.firstName}
                     </Button>
-                    {/* <Button color="inherit" size="large" className={classes.button} component={NavLink} to="/setting">
-                        Settings
-                    </Button> */}
                     <Button color="inherit" size="large" className={classes.button} onClick={props.logoutUser}>
                         Log Out
                 </Button>
