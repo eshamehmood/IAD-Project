@@ -64,7 +64,13 @@ const useStyles = ((theme) => ({
         margin: '20px 5px'
     },
     paper: {
-        padding: '20px 12px'
+        padding: '20px 12px',
+        minWidth: 320,
+        maxWidth: 645,
+        width: '80vw',
+    },
+    gridstyle: {
+        maxWidth: '100%'
     },
 }));
 
@@ -227,7 +233,8 @@ class UserPage extends Component {
                     alignItems="center"
                     justify="center"
                     item xs={10}
-                    key={post.postId}>
+                    key={post.postId}
+                    style={{ maxWidth: '100%' }}>
                     <Post post={post} />
                 </Grid>
             )) : (<div>No Post Found</div>)
@@ -280,8 +287,11 @@ class UserPage extends Component {
                 item
                 container
                 justify="center"
+                xs={10}
+                className={classes.gridstyle}
             >
-                <Grid item xs={6}>
+                <Grid item xs={6}
+                    className={classes.gridstyle}>
                     <Paper className={classes.paper}>
                         {avatarMarkup}
                         <Typography className={classes.capitalize} component="h1" variant="h3" align="center" color="textPrimary" gutterBottom>
@@ -312,7 +322,7 @@ class UserPage extends Component {
             container
             justify="center"
         >
-            <Grid item xs={6}>
+            <Grid item xs={6} className={classes.gridstyle}>
                 <Paper className={classes.paper}>
                     <CircularProgress
                         style={{
@@ -330,7 +340,10 @@ class UserPage extends Component {
                 alignItems="center"
                 justify="center"
                 direction="column"
-                style={{ maxWidth: '100vw', marginTop: '1%' }}
+                style={{
+                    // maxWidth: '100vw', 
+                    marginTop: '1%'
+                }}
             >
                 {userInfoMarkup}
                 {userPostsMarkup}

@@ -18,9 +18,9 @@ axios.defaults.baseURL = 'https://us-central1-iad-r-project.cloudfunctions.net/a
 
 const token = localStorage.FBIdToken;
 if (token !== 'undefined' && token !== undefined) {
-    console.log('typeof token', typeof token)
-    console.log('token === undefined', token === undefined)
-    console.log('token === \'undefined\'', token === 'undefined')
+    // console.log('typeof token', typeof token)
+    // console.log('token === undefined', token === undefined)
+    // console.log('token === \'undefined\'', token === 'undefined')
     const decodedToken = jwtDecode(token);
     if (decodedToken.exp * 1000 < Date.now()) {
         store.dispatch(logoutUser());

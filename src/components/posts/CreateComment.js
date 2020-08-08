@@ -43,8 +43,7 @@ class CreateComment extends Component {
         body: '',
         errors: {},
     }
-    handleSend = (e) => {
-        e.preventDefault()
+    handleSend = () => {
         this.setState({ postId: this.props.postId });
         if (this.state.body.toString().trim() === '') {
             this.setState({ errors: { body: 'Must not be empty' } })
@@ -53,6 +52,11 @@ class CreateComment extends Component {
             this.setState({ errors: {} })
             this.props.createComment(this.props.postId, { body: this.state.body });
             this.setState({ body: '' });
+        }
+    }
+    handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            this.handleSend();
         }
     }
     handleChange = (e) => {
@@ -75,6 +79,7 @@ class CreateComment extends Component {
                         value={this.state.body}
                         placeholder="Write a comment"
                         onChange={this.handleChange}
+                        onKeyDown={this.handleKeyDown}
                         required
                         size="small"
                         fullWidth

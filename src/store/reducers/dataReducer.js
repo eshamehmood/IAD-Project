@@ -120,7 +120,7 @@ export default function (state = initialState, action) {
                 posts: state.posts.map(
                     (post) => post.postId === action.payload.postId ? {
                         ...post,
-                        comments: [action.payload, ...post.comments],
+                        comments: [...post.comments, action.payload],
                         commentCount: post.commentCount + 1
                     } : post
                 )

@@ -175,7 +175,7 @@ exports.getComments = (req, res) => {
             postData.postId = doc.id;
             return db
                 .collection('comments')
-                .orderBy('createdAt', 'desc')
+                .orderBy('createdAt')
                 .where('postId', '==', req.params.postId)
                 .get();
         })

@@ -25,7 +25,8 @@ class Home extends Component {
         if (!authenticated) return <Redirect to='/signin' />
         let recentPostsMarkup = !loading && !userLoading ?
             posts && posts.length !== 0 ? posts.map(post =>
-                <Grid item xs={10} key={post.postId}>
+                <Grid
+                    style={{ maxWidth: '100%' }} item xs={10} key={post.postId}>
                     <Post post={post} />
                 </Grid>
             ) :
@@ -48,7 +49,7 @@ class Home extends Component {
                 direction="column"
                 alignItems="center"
                 justify="center"
-                style={{ maxWidth: '100vw', marginTop: '1%' }}
+                style={{ marginTop: '1%' }}
             >
                 {recentPostsMarkup}
             </Grid>
