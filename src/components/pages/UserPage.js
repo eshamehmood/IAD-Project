@@ -66,8 +66,8 @@ const useStyles = ((theme) => ({
     paper: {
         padding: '20px 12px',
         minWidth: 320,
-        maxWidth: 645,
-        width: '80vw',
+        // maxWidth: 645,
+        // width: '80vw',
     },
     gridstyle: {
         maxWidth: '100%'
@@ -283,14 +283,16 @@ class UserPage extends Component {
             <Avatar className={classes.avatarLarge} src={imageUrl} />
 
         let userInfoMarkup = !meLoading && !userLoading ? (
+
             <Grid
-                item
                 container
+                alignItems="center"
                 justify="center"
-                xs={10}
+                item xs={10}
+                style={{ maxWidth: '100%' }}
                 className={classes.gridstyle}
             >
-                <Grid item xs={6}
+                <Grid item xs={4}
                     className={classes.gridstyle}>
                     <Paper className={classes.paper}>
                         {avatarMarkup}
@@ -322,7 +324,7 @@ class UserPage extends Component {
             container
             justify="center"
         >
-            <Grid item xs={6} className={classes.gridstyle}>
+            <Grid item xs={4} className={classes.gridstyle}>
                 <Paper className={classes.paper}>
                     <CircularProgress
                         style={{
